@@ -87,6 +87,22 @@ class Phoneme:
             Manner.AFFRICATE
         )
 
+    def __eq__(self, other: object) -> bool:
+        if type(other) != Phoneme:
+            raise ValueError("Phoneme can only compare against own type.")
+        elif (
+            self.symbol == other.symbol and
+            self.manner == other.manner and
+            self.place == other.place and
+            self.voiced == other.voiced and
+            self.height == other.height and
+            self.backness == other.backness and
+            self.rounded == other.rounded
+        ):
+            return True
+        else:
+            return False
+
     def __str__(self) -> str:
         return self.symbol
 
@@ -105,6 +121,9 @@ class Syllable:
         for p in self.coda:
             yield p
 
+    def __getitem__(self, index):
+        return list(self)[index]
+
     def __len__(self):
         return len(self.onset) + len(self.nucleus) + len(self.coda)
 
@@ -112,12 +131,28 @@ class Syllable:
         return "".join(str(p) for p in self)
 
 
+class Morpheme:
+    def __init__(self, syllables: list[Syllable]) -> None:
+        self.syllables = syllables
+
+    def __iter__(self):
+        for syllable in self.syllables:
+            for p in syllable:
+                yield p
+
+    def __getitem__(self, index):
+        return list(self)[index]
+
+    def __len__(self):
+        counter = 0
+        for s in self.syllables:
+            counter += len(s)
+        return counter
+
+
 class Grapheme:
     ...
 
-
-class Morpheme:
-    ...
 
 
 if __name__ == "__main__":
