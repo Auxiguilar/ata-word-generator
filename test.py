@@ -4,13 +4,25 @@ from main import *
 
 
 class TestPhonemeClass(TestCase):
+    def test_phoneme_string(self):
+        phoneme = Phoneme(
+            symbol="a",
+            manner=Manner.VOWEL,
+            place=None,
+            voiced=True,
+            height=VowelHeight.OPEN,
+            backness=VowelBackness.FRONT,
+            rounded=False
+        )
+        self.assertEqual(str(phoneme), "a")
+
     def test_phoneme_eq(self):
         phoneme_a_1 = Phoneme(
             symbol="a",
             manner=Manner.VOWEL,
             place=None,
             voiced=True,
-            height=VowelHeight.LOW,
+            height=VowelHeight.OPEN,
             backness=VowelBackness.FRONT,
             rounded=False
         )
@@ -19,7 +31,7 @@ class TestPhonemeClass(TestCase):
             manner=Manner.VOWEL,
             place=None,
             voiced=True,
-            height=VowelHeight.LOW,
+            height=VowelHeight.OPEN,
             backness=VowelBackness.FRONT,
             rounded=False
         )
@@ -44,7 +56,7 @@ class TestPhonemeClass(TestCase):
             manner=Manner.VOWEL,
             place=None,
             voiced=True,
-            height=VowelHeight.LOW,
+            height=VowelHeight.OPEN,
             backness=VowelBackness.FRONT,
             rounded=False
         )
@@ -55,13 +67,39 @@ class TestPhonemeClass(TestCase):
 
 
 class TestSyllableClass(TestCase):
+    def test_syllable_string(self):
+        phoneme_a = Phoneme(
+            symbol="a",
+            manner=Manner.VOWEL,
+            place=None,
+            voiced=True,
+            height=VowelHeight.OPEN,
+            backness=VowelBackness.FRONT,
+            rounded=False
+        )
+        phoneme_b = Phoneme(
+            symbol="b",
+            manner=Manner.PLOSIVE,
+            place=Place.BILABIAL,
+            voiced=True,
+            height=None,
+            backness=None,
+            rounded=False
+        )
+        syllable = Syllable(
+            [phoneme_b],
+            [phoneme_a],
+            [phoneme_b]
+        )
+        self.assertEqual(str(syllable), "bab")
+
     def test_syllable_iterator(self):
         phoneme_a = Phoneme(
             symbol="a",
             manner=Manner.VOWEL,
             place=None,
             voiced=True,
-            height=VowelHeight.LOW,
+            height=VowelHeight.OPEN,
             backness=VowelBackness.FRONT,
             rounded=False
         )
@@ -80,7 +118,7 @@ class TestSyllableClass(TestCase):
             [phoneme_b]
         )
 
-        self.assertEqual(list(syllable), [phoneme_b, phoneme_a, phoneme_b])
+        self.assertListEqual(list(syllable), [phoneme_b, phoneme_a, phoneme_b])
 
     def test_syllable_indexing(self):
         phoneme_a = Phoneme(
@@ -88,7 +126,7 @@ class TestSyllableClass(TestCase):
             manner=Manner.VOWEL,
             place=None,
             voiced=True,
-            height=VowelHeight.LOW,
+            height=VowelHeight.OPEN,
             backness=VowelBackness.FRONT,
             rounded=False
         )
@@ -111,13 +149,13 @@ class TestSyllableClass(TestCase):
 
 
 class TestMorphemeClass(TestCase):
-    def test_morpheme_iterator(self):
+    def test_morpheme_string(self):
         phoneme_a = Phoneme(
             symbol="a",
             manner=Manner.VOWEL,
             place=None,
             voiced=True,
-            height=VowelHeight.LOW,
+            height=VowelHeight.OPEN,
             backness=VowelBackness.FRONT,
             rounded=False
         )
@@ -137,7 +175,35 @@ class TestMorphemeClass(TestCase):
         )
         morpheme = Morpheme([syllable, syllable])
 
-        self.assertEqual(list(morpheme), list(syllable) + list(syllable))
+        self.assertEqual(str(morpheme), "babbab")
+
+    def test_morpheme_iterator(self):
+        phoneme_a = Phoneme(
+            symbol="a",
+            manner=Manner.VOWEL,
+            place=None,
+            voiced=True,
+            height=VowelHeight.OPEN,
+            backness=VowelBackness.FRONT,
+            rounded=False
+        )
+        phoneme_b = Phoneme(
+            symbol="b",
+            manner=Manner.PLOSIVE,
+            place=Place.BILABIAL,
+            voiced=True,
+            height=None,
+            backness=None,
+            rounded=False
+        )
+        syllable = Syllable(
+            [phoneme_b],
+            [phoneme_a],
+            [phoneme_b]
+        )
+        morpheme = Morpheme([syllable, syllable])
+
+        self.assertListEqual(list(morpheme), list(syllable) + list(syllable))
 
 
     def test_morpheme_indexing(self):
@@ -146,7 +212,7 @@ class TestMorphemeClass(TestCase):
             manner=Manner.VOWEL,
             place=None,
             voiced=True,
-            height=VowelHeight.LOW,
+            height=VowelHeight.OPEN,
             backness=VowelBackness.FRONT,
             rounded=False
         )
