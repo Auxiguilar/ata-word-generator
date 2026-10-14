@@ -40,11 +40,12 @@ class VowelBackness(Enum):
 
 
 class Phoneme:
+    # TODO: I need to revisit this.
     def __init__(self,
             symbol: str,
             manner: Manner,
             place: Place | None,
-            voiced: bool,
+            voiced: bool | None,
             height: VowelHeight | None,
             backness: VowelBackness | None,
             rounded: bool | None
@@ -59,14 +60,19 @@ class Phoneme:
         self.backness = backness
         self.rounded = rounded
 
-        # Verify
+        # Validate
         if self.manner == Manner.VOWEL:
             if self.height is None or self.backness is None:
-                raise ValueError("Missing place of articulation for vowel.")
-            elif self.place is not None:
-                self.place = None # Ignore consonant articulation
-        elif manner != Manner.VOWEL and self.place is None:
-            raise ValueError("Missing place of articulation for consonant.")
+                raise ValueError("Missing height and backness for vowel.")
+            # Ignore consonant articulation; vowels may be "unvoiced."
+            self.place = None
+        else:
+            if self.place is None:
+                raise ValueError("Missing place of articulation for consonant.")
+            # Ignore vowel features
+            self.height = None
+            self.backness = None
+            self.rounded = None
 
     # TODO: Dubious definition of approximant?
     @property
@@ -95,9 +101,9 @@ class Phoneme:
         )
 
     def __eq__(self, other: object) -> bool:
-        if type(other) != Phoneme:
-            raise ValueError("Phoneme can only compare against own type.")
-        elif (
+        if not isinstance(other, Phoneme):
+            return NotImplemented
+        return (
             self.symbol == other.symbol and
             self.manner == other.manner and
             self.place == other.place and
@@ -105,20 +111,31 @@ class Phoneme:
             self.height == other.height and
             self.backness == other.backness and
             self.rounded == other.rounded
-        ):
-            return True
-        else:
-            return False
+        )
 
     def __str__(self) -> str:
         return self.symbol
 
+    def __repr__(self) -> str:
+        return (
+            f"Phoneme(symbol={self.symbol!r}, "
+            f"manner={self.manner!r}, "
+            f"place={self.place!r}, "
+            f"voiced={self.voiced!r}, "
+            f"height={self.height!r}, "
+            f"backness={self.backness!r}, "
+            f"rounded={self.rounded!r})"
+        )
+
 
 class Syllable:
-    def __init__(self, onset: list[Phoneme], nucleus: list[Phoneme], coda: list[Phoneme]) -> None:
-        self.onset = onset
+    def __init__(self,
+            onset: list[Phoneme] | None,
+            nucleus: list[Phoneme],
+            coda: list[Phoneme] | None) -> None:
+        self.onset = onset if onset is not None else []
         self.nucleus = nucleus
-        self.coda = coda
+        self.coda = coda if coda is not None else []
 
     def __iter__(self):
         for p in self.onset:
@@ -128,7 +145,7 @@ class Syllable:
         for p in self.coda:
             yield p
 
-    def __getitem__(self, index):
+    def __getitem__(self, index: int):
         return list(self)[index]
 
     def __len__(self):
@@ -137,27 +154,92 @@ class Syllable:
     def __str__(self) -> str:
         return "".join(str(p) for p in self)
 
+    def __repr__(self) -> str:
+        return (
+            f"Syllable(onset={self.onset!r}, "
+            f"nucleus={self.nucleus!r}, "
+            f"coda={self.coda!r})"
+        )
+
 
 class Morpheme:
-    def __init__(self, syllables: list[Syllable]) -> None:
-        self.syllables = syllables
+    def __init__(self, phoneme: list[Phoneme]) -> None:
+        self.phonemes = phoneme
 
     def __iter__(self):
-        for syllable in self.syllables:
-            for p in syllable:
-                yield p
+        yield from self.phonemes
 
-    def __getitem__(self, index):
-        return list(self)[index]
+    def __getitem__(self, index: int):
+        return self.phonemes[index]
 
     def __len__(self):
-        counter = 0
-        for s in self.syllables:
-            counter += len(s)
-        return counter
+        return len(self.phonemes)
 
     def __str__(self) -> str:
         return "".join(str(p) for p in self)
+
+    def __repr__(self) -> str:
+        return (
+            f"Morpheme(phonemes={self.phonemes!r})"
+        )
+
+
+class Word:
+    def __init__(self,
+            morphemes: list[Morpheme],
+            syllables: list[Syllable] | None = None) -> None:
+        self.morphemes = morphemes
+        self._syllables = syllables
+        if self.syllables is not None:
+            self._validate_syllables()
+
+    def _validate_syllables(self):
+        if self._syllables is None:
+            return
+        phonemes_from_syllables: list[Phoneme] = []
+        for s in self._syllables:
+            phonemes_from_syllables.extend(list(s))
+        if len(phonemes_from_syllables) != len(self):
+            raise ValueError("Invalid syllabification: unequal length")
+        phonemes_from_morphemes: list[Phoneme] = []
+        for m in self.morphemes:
+            phonemes_from_morphemes.extend(m)
+        for i in range(len(phonemes_from_morphemes)):
+            if phonemes_from_morphemes[i] != phonemes_from_syllables[i]:
+                raise ValueError(
+                    f"Invalid syllabification: phoneme mismatch ({phonemes_from_morphemes[i]}, {str(phonemes_from_syllables[i])})"
+                )
+
+    @property
+    def syllables(self):
+        if self._syllables is None:
+            return RuntimeError("Word has not been syllabified.")
+        return self._syllables
+
+    def syllabify(self, syllabifier):
+        # Later implementation.
+        ...
+
+    def __iter__(self):
+        for m in self.morphemes:
+            yield from m
+
+    def __getitem__(self, index: int):
+        phonemes = []
+        for m in self.morphemes:
+            phonemes.extend(m)
+        return phonemes[index]
+
+    def __len__(self):
+        return sum(len(morpheme) for morpheme in self.morphemes)
+
+    def __str__(self) -> str:
+        return "".join(str(p) for p in self)
+
+    def __repr__(self) -> str:
+        return (
+            f"Word(morphemes={self.morphemes!r})"
+        )
 
 
 class Grapheme:

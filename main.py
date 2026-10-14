@@ -1,4 +1,4 @@
-from src.classes import Manner, Place, VowelHeight, VowelBackness, Phoneme, Syllable, Morpheme
+from src.classes import Manner, Place, VowelHeight, VowelBackness, Phoneme, Syllable, Morpheme, Word
 
 
 def main():
@@ -20,7 +20,7 @@ def main():
         voiced=True,
         height=None,
         backness=None,
-        rounded=False
+        rounded=None
     )
     phoneme_c = Phoneme(
         symbol="c", # Technically incorrect symbol.
@@ -29,20 +29,39 @@ def main():
         voiced=False,
         height=None,
         backness=None,
-        rounded=False
+        rounded=None
     )
-
+    phoneme_s = Phoneme(
+        symbol="s",
+        manner=Manner.FRICATIVE,
+        place=Place.ALVEOLAR,
+        voiced=False,
+        height=None,
+        backness=None,
+        rounded=None
+    )
     syllable = Syllable(
         [phoneme_c],
         [phoneme_a],
         [phoneme_b]
     )
+    morpheme_cab = Morpheme(
+        list(syllable)
+    )
+    morpheme_s = Morpheme(
+        [phoneme_s]
+    )
+    word = Word([morpheme_cab, morpheme_s])
 
-    print(syllable) # "Cab," except it's said funny.
+    print(syllable) # "cab," except it's said funny.
     print(syllable[0])
-    print([str(p) for p in list(syllable)]) # cuz repr
+    print([p for p in list(syllable)])
     for p in list(syllable):
         print(p)
+    print(repr(syllable))
+    print(repr(morpheme_cab))
+    print(word) # "cabs"; now plural for your phonemic(?) pleasure
+    print(repr(word))
 
 
 if __name__ == "__main__":
