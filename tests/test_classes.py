@@ -1,20 +1,16 @@
 from unittest import TestCase
 
-from src.classes import Manner, Place, VowelHeight, VowelBackness, Phoneme, Syllable, Morpheme
+from src.classes import Manner, Place, VowelHeight, VowelBackness, Phoneme, Syllable, Morpheme, Word
 
 phoneme_c = Phoneme(
     symbol="c",
     manner=Manner.PLOSIVE,
     place=Place.VELAR,
-    voiced=False,
-    height=None,
-    backness=None,
-    rounded=False
+    voiced=False
 )
 phoneme_a = Phoneme(
     symbol="a",
     manner=Manner.VOWEL,
-    place=None,
     voiced=True,
     height=VowelHeight.OPEN,
     backness=VowelBackness.FRONT,
@@ -24,21 +20,29 @@ phoneme_b = Phoneme(
     symbol="b",
     manner=Manner.PLOSIVE,
     place=Place.BILABIAL,
-    voiced=True,
-    height=None,
-    backness=None,
-    rounded=False
+    voiced=True
+)
+phoneme_s = Phoneme(
+    symbol="s",
+    manner=Manner.FRICATIVE,
+    place=Place.ALVEOLAR,
+    voiced=False
 )
 syllable_cab = Syllable(
     [phoneme_c],
     [phoneme_a],
     [phoneme_b]
 )
-morpheme_cabcab = Morpheme((list(syllable_cab) + list(syllable_cab)))
+morpheme_cab = Morpheme(list(syllable_cab))
+word_cabs = Word([
+    morpheme_cab,
+    Morpheme([phoneme_s])
+])
+
 
 class TestPhonemeClass(TestCase):
     def test_phoneme_invalid(self):
-        with self.assertRaisesRegex(ValueError, "height and backnes"):
+        with self.assertRaisesRegex(ValueError, "vowel"):
             invalid_vowel = Phoneme(
                 symbol="a",
                 manner=Manner.VOWEL,
@@ -48,7 +52,7 @@ class TestPhonemeClass(TestCase):
                 backness=None,
                 rounded=False
             )
-        with self.assertRaisesRegex(ValueError, "place of articulation"):
+        with self.assertRaisesRegex(ValueError, "consonant"):
             invalid_consonant = Phoneme(
                 symbol="b",
                 manner=Manner.PLOSIVE,
@@ -106,22 +110,43 @@ class TestSyllableClass(TestCase):
 
 class TestMorphemeClass(TestCase):
     def test_morpheme_string(self):
-        morpheme = morpheme_cabcab
-        self.assertEqual(str(morpheme), "cabcab")
+        morpheme = morpheme_cab
+        self.assertEqual(str(morpheme), "cab")
 
     def test_morpheme_iterator(self):
-        morpheme = morpheme_cabcab
+        morpheme = morpheme_cab
         syllable = syllable_cab
-        self.assertListEqual(list(morpheme), list(syllable) + list(syllable))
+        self.assertListEqual(list(morpheme), list(syllable))
         
     def test_morpheme_indexing(self):
-        morpheme = morpheme_cabcab
-        self.assertEqual(morpheme[0], phoneme_c)
+        morpheme = morpheme_cab
+        phoneme = phoneme_c
+        self.assertEqual(morpheme[0], phoneme)
 
     def test_morpheme_length(self):
-        morpheme = morpheme_cabcab
-        self.assertEqual(len(morpheme), 6)
+        morpheme = morpheme_cab
+        self.assertEqual(len(morpheme), 3)
 
 
 class TestWordClass(TestCase):
-    ...
+    def test_word_string(self):
+        word = word_cabs
+        self.assertEqual(str(word), "cabs")
+
+    def test_word_iterator(self):
+        word = word_cabs
+        syllable = syllable_cab
+        phoneme = phoneme_s
+        self.assertListEqual(list(word), list(syllable) + [phoneme])
+
+    def test_word_indexing(self):
+        word = word_cabs
+        phoneme = phoneme_s
+        self.assertEqual(word[3], phoneme)
+
+    def test_word_length(self):
+        word = word_cabs
+        self.assertEqual(len(word), 4)
+
+    # Future: Test syllable validation
+    # Possibly: Test syllabification.
