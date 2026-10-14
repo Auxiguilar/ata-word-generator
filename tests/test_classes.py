@@ -1,9 +1,43 @@
 from unittest import TestCase
 
-from main import *
+from src.classes import Manner, Place, VowelHeight, VowelBackness, Phoneme, Syllable, Morpheme
 
 
 class TestPhonemeClass(TestCase):
+    def test_phoneme_invalid(self):
+        with self.assertRaisesRegex(ValueError, "Missing place of articulation for vowel."):
+            invalid_vowel = Phoneme(
+                symbol="a",
+                manner=Manner.VOWEL,
+                place=None,
+                voiced=True,
+                height=None,
+                backness=None,
+                rounded=False
+            )
+        with self.assertRaisesRegex(ValueError, "Missing place of articulation for consonant."):
+            invalid_consonant = Phoneme(
+                symbol="b",
+                manner=Manner.PLOSIVE,
+                place=None,
+                voiced=True,
+                height=None,
+                backness=None,
+                rounded=False
+            )
+
+    def test_ignored_articulation(self):
+        phoneme = Phoneme(
+            symbol="a",
+            manner=Manner.VOWEL,
+            place=Place.ALVEOLAR,
+            voiced=True,
+            height=VowelHeight.OPEN,
+            backness=VowelBackness.FRONT,
+            rounded=False
+        )
+        self.assertIsNone(phoneme.place)
+
     def test_phoneme_string(self):
         phoneme = Phoneme(
             symbol="a",
