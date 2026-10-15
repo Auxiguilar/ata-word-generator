@@ -222,8 +222,9 @@ class Word:
 
     @property
     def syllables(self):
+        # This whole affair seems kinda stupid.
         if self._syllables is None:
-            raise RuntimeError("Word has not been syllabified.")
+            return []
         return self._syllables
 
     def syllabify(self, syllabifier):
@@ -253,5 +254,6 @@ class Word:
 
 
 class Grapheme:
-    def __init__(self, symbol: str) -> None:
+    def __init__(self, symbol: str, phonemes: list[Phoneme]) -> None:
         self.symbol = symbol # Any number of characters.
+        self.phonemes = phonemes
