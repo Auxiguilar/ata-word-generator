@@ -1,4 +1,5 @@
 from enum import Enum, auto
+from dataclasses import dataclass
 
 
 class Manner(Enum):
@@ -39,32 +40,18 @@ class VowelBackness(Enum):
     BACK = auto()
 
 
-# TODO: Should be immutable...
+@dataclass(frozen=True)
 class Phoneme:
-    def __init__(self,
-            symbol: str,
-            manner: Manner,
-            place: Place | None = None,
-            voiced: bool | None = None, # This one is staring at me sternly...
-            height: VowelHeight | None = None,
-            backness: VowelBackness | None = None,
-            rounded: bool | None = None
-        ) -> None:
-        self.symbol = symbol
-        self.manner = manner
-        self.place = place
-        self.voiced = voiced
+    symbol: str
+    manner: Manner
+    place: Place | None = None
+    voiced: bool | None = None
+    height: VowelHeight | None = None
+    backness: VowelBackness | None = None
+    rounded: bool | None = None
 
-        # Vowels
-        self.height = height
-        self.backness = backness
-        self.rounded = rounded
-
+    def __post_init__(self):
         # Validate
-        self._validate()
-        self._normalize()
-
-    def _validate(self):
         if self.manner == Manner.VOWEL:
             if (self.height is None or
                 self.backness is None or
@@ -74,22 +61,18 @@ class Phoneme:
             if self.place is None or self.voiced is None:
                 raise ValueError("Invalid consonant.")
 
-    def _normalize(self):
+        # Normalize
         if self.manner == Manner.VOWEL:
-            self.place = None
+            object.__setattr__(self, "place", None)
         else:
-            self.height = None
-            self.backness = None
-            self.rounded = None
+            object.__setattr__(self, "height", None)
+            object.__setattr__(self, "backness", None)
+            object.__setattr__(self, "rounded", None)
 
     # TODO: Dubious definition of approximant?
     @property
     def is_approximant(self) -> bool:
         return self.manner in (Manner.GLIDE, Manner.LIQUID)
-
-    @property
-    def is_vowel(self) -> bool:
-        return self.manner == Manner.VOWEL
 
     @property
     def is_sonorant(self) -> bool:
@@ -106,19 +89,6 @@ class Phoneme:
             Manner.PLOSIVE,
             Manner.FRICATIVE,
             Manner.AFFRICATE
-        )
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, Phoneme):
-            return NotImplemented
-        return (
-            self.symbol == other.symbol and
-            self.manner == other.manner and
-            self.place == other.place and
-            self.voiced == other.voiced and
-            self.height == other.height and
-            self.backness == other.backness and
-            self.rounded == other.rounded
         )
 
     def __str__(self) -> str:
